@@ -13,8 +13,8 @@ form.addEventListener('submit', handlerSearch);
 function handlerSearch(evt) {
   evt.preventDefault();
   search(1, form.elements.searchQuery.value)
-      .then(data => {
-        console.log(data);
+    .then(data => {
+      console.log(data);
       if (data.hits.length === 0) {
         throw new Error('Error');
       }
@@ -31,8 +31,8 @@ function handlerSearch(evt) {
         behavior: 'smooth',
       });
     })
-      .catch(err => {
-        console.log(err);
+    .catch(err => {
+      console.log(err);
       gallary.innerHTML = '';
       return Notiflix.Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -93,9 +93,9 @@ function handlerMorePages(entries) {
       page += 1;
 
       search(page, form.elements.searchQuery.value)
-          .then(data => {
-            console.log(data);
-          maxRequest = Math.round(data.totalHits / 40);
+        .then(data => {
+          console.log(data);
+          const maxRequest = Math.round(data.totalHits / 40);
           gallary.insertAdjacentHTML('beforeend', createMarkup(data.hits));
           gallerybBox.refresh();
           if (page >= maxRequest) {
@@ -103,8 +103,8 @@ function handlerMorePages(entries) {
             Notiflix.Notify.info('End search!');
           }
         })
-          .catch(err => {
-            console.log(err);
+        .catch(err => {
+          console.log(err);
           return Notiflix.Notify.info(
             'Sorry, there are no images matching your search query. Please try again.'
           );
