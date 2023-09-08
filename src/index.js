@@ -6,22 +6,21 @@ import axios from 'axios';
 
 const form = document.querySelector('#search-form');
 const gallary = document.querySelector('.js-gallery');
+const guard = document.querySelector('.js-guard');
 
 form.addEventListener('submit', handlerSearch);
 
 function handlerSearch(evt) {
   evt.preventDefault();
-  search(form.elements.searchQuery.value)
+  search(1, form.elements.searchQuery.value)
     .then(data => {
       if (data.hits.length === 0) {
         throw new Error('Error');
       }
-
-      gallary.innerHTML = createMarkup(data.hits);
-      let lightbox = new SimpleLightbox('.photo-card a', {
-        captionsData: 'alt',
-        captionDelay: 250,
-      });
+      gallary.innerHTML = '';
+      observer.observe(guard);
+      gallary.insertAdjacentHTML('beforeend', createMarkup(data.hits));
+      gallerybBox.refresh();
       const { height: cardHeight } = document
         .querySelector('.gallery')
         .firstElementChild.getBoundingClientRect();
@@ -30,13 +29,8 @@ function handlerSearch(evt) {
         top: cardHeight * 2,
         behavior: 'smooth',
       });
-        if (data) {
-            
-        }
-        observer
     })
     .catch(err => {
-      console.log(err);
       gallary.innerHTML = '';
       return Notiflix.Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -44,7 +38,7 @@ function handlerSearch(evt) {
     });
 }
 
-async function search(searchUser) {
+async function search(page = 1, searchUser) {
   const resp = await axios('https://pixabay.com/api/', {
     params: {
       method: 'GET',
@@ -54,13 +48,13 @@ async function search(searchUser) {
       orientation: 'horizontal',
       safesearch: 'true',
       per_page: 40,
+      page: page,
     },
   });
-  console.log(resp);
 
   return resp.data;
 }
-
+let page = 1;
 function createMarkup(arr) {
   const markup = arr
     .map(
@@ -85,10 +79,38 @@ function createMarkup(arr) {
 
   return markup;
 }
-
-let observer = new IntersectionObserver(callback, options);
-let options = {
-  root: document.querySelector('#scrollArea'),
-  rootMargin: '300px',
- 
+const options = {
+  root: null,
+  rootMargin: '700px',
 };
+const observer = new IntersectionObserver(handlerMorePages, options);
+
+function handlerMorePages(entries) {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      page += 1;
+
+      search(page, form.elements.searchQuery.value)
+        .then(data => {
+          maxRequest = Math.round(data.totalHits / 40);
+
+          gallary.insertAdjacentHTML('beforeend', createMarkup(data.hits));
+          gallerybBox.refresh();
+          if (page >= maxRequest) {
+            observer.unobserve(guard);
+            Notiflix.Notify.info('End search!');
+          }
+        })
+        .catch(err => {
+          return Notiflix.Notify.info(
+            'Sorry, there are no images matching your search query. Please try again.'
+          );
+        });
+    }
+  });
+}
+
+let gallerybBox = new SimpleLightbox('.gallery a', {
+  captionDelay: 250,
+  captionsData: 'alt',
+});
