@@ -35,7 +35,9 @@ function handlerSearch(evt) {
       });
     })
     .catch(err => {
+      endSearch.style.display = 'none';
       form.reset();
+
       gallary.innerHTML = '';
       return Notiflix.Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -107,6 +109,7 @@ function handlerMorePages(entries) {
           }
         })
         .catch(err => {
+          endSearch.style.display = 'none';
           return Notiflix.Notify.info(
             'Sorry, there are no images matching your search query. Please try again.'
           );
