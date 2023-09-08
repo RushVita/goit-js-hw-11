@@ -23,6 +23,7 @@ body {
 
 .photo-card {
   width: 300px;
+  height: 300px;
 }
 .gallary-img {
   width: 100%;
@@ -38,4 +39,10 @@ body {
 
 .info-item{
     font-size: 16px;
+}
+
+.js-end-search{
+    text-align: center;
+    font-size: 36px;
+    display: none;
 }

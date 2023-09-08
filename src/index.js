@@ -7,6 +7,7 @@ import axios from 'axios';
 const form = document.querySelector('#search-form');
 const gallary = document.querySelector('.js-gallery');
 const guard = document.querySelector('.js-guard');
+const endSearch = document.querySelector('.js-end-search');
 
 form.addEventListener('submit', handlerSearch);
 
@@ -14,7 +15,9 @@ function handlerSearch(evt) {
   evt.preventDefault();
   search(1, form.elements.searchQuery.value)
     .then(data => {
-      console.log(data);
+      if (form.elements.searchQuery.value.trim() === '') {
+        throw new Error('Error');
+      }
       if (data.hits.length === 0) {
         throw new Error('Error');
       }
@@ -32,7 +35,7 @@ function handlerSearch(evt) {
       });
     })
     .catch(err => {
-      console.log(err);
+      form.reset();
       gallary.innerHTML = '';
       return Notiflix.Notify.failure(
         'Sorry, there are no images matching your search query. Please try again.'
@@ -40,7 +43,7 @@ function handlerSearch(evt) {
     });
 }
 
-async function search(page = 1, searchUser) {
+async function search(page, searchUser) {
   const resp = await axios('https://pixabay.com/api/', {
     params: {
       method: 'GET',
@@ -57,6 +60,7 @@ async function search(page = 1, searchUser) {
   return resp.data;
 }
 let page = 1;
+
 function createMarkup(arr) {
   const markup = arr
     .map(
@@ -94,17 +98,15 @@ function handlerMorePages(entries) {
 
       search(page, form.elements.searchQuery.value)
         .then(data => {
-          console.log(data);
-          const maxRequest = Math.round(data.totalHits / 40);
           gallary.insertAdjacentHTML('beforeend', createMarkup(data.hits));
           gallerybBox.refresh();
-          if (page >= maxRequest) {
+          if (page * 40 >= data.totalHits) {
+            page = 1;
             observer.unobserve(guard);
-            Notiflix.Notify.info('End search!');
+            endSearch.style.display = 'block';
           }
         })
         .catch(err => {
-          console.log(err);
           return Notiflix.Notify.info(
             'Sorry, there are no images matching your search query. Please try again.'
           );
